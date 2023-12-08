@@ -109,9 +109,9 @@
         //      * When engaging the safety, return "Safety enabled!"
         //      * When disengaging the safety, return "Safety disabled!"
         // 🌟 HINT: instances need to keep track of their maximum capacity as well as their current capacity
-        constructor(oneArg) {
-          this.oneArg = oneArg;
-          this.ammoLeft = oneArg;
+        constructor(projectile) {
+          this.projectile = projectile;
+          this.ammoLeft = projectile;
           this.safetyOn = true;
         }
         shoot() {
@@ -123,8 +123,26 @@
           }
         }
         reload(num) {
-          this.num = num++;
-          return `${num} projectiles left!`;
+          if (typeof num !== "number" || num <= 0) {
+            return "Error reloading!";
+          }
+          let emptys = this.projectile - this.ammoLeft;
+          if (num > emptys) {
+            this.ammoLeft = this.projectile;
+          } else {
+            this.ammoLeft += num;
+          }
+          return `${this.ammoLeft} projectiles left!`;
+        }
+
+        toggleSafety() {
+          this.safetyOn = !this.safetyOn;
+          if (this.safetyOn === true) {
+            return "Safety enabled!";
+          } else {
+            return "Safety disabled!";
+          }
+          return `Safety ${this.safety ? "en" : "dis"}abled!`;
         }
       }
 
@@ -144,42 +162,83 @@
         //    ebook.next() // returns null
         // 🌟 HINT: remember about the `slice` method which strings and arrays have
         // ❗ Feel free to implement `back`, although this is not required nor graded
-        constructor() {}
+        constructor(firstArg, secondArg) {
+          this.firstArg = firstArg;
+          this.secondArg = secondArg;
+          this.page = 0;
+        }
+        next() {
+          let result;
+          if (
+            this.firstArg.slice(this.page, this.page + this.secondArg) === ""
+          ) {
+            return null;
+          }
+          result = this.firstArg.slice(this.page, this.page + this.secondArg);
+          this.page += this.secondArg;
+
+          return result;
+        }
       }
 
       // 👉 CHALLENGE 4 AntFarm
       class AntFarm {
-        // 🧠 Constructor takes **any** number of arguments, which are strings: the names of your ants
-        // 🧠 Instances of AntFarm have an `ants` property holding an array of ants:
+        // :brain: Constructor takes **any** number of arguments, which are strings: the names of your ants
+        constructor() {
+          this.ants = [...arguments].map((name) => {
+            return { name: name, health: 100 };
+          });
+        }
+        // :brain: Instances of AntFarm have an `ants` property holding an array of ants:
         //      * Each ant is an object with a `name` prop and a `health` prop that starts at 100
-        // 🧠 Instances of AntFarm have a `work` method:
+        // :brain: Instances of AntFarm have a `work` method:
         //      * When invoked your ants do chores at a cost of 20 health points each
         //      * The method takes no arguments and returns the string "<ant number> ants starting work!"
         //      * If the `health` of any ant decreases to zero or below, it dies and is removed from `ants`
         //      * If `ants` contains no ants, the method returns "No ants here. Did you work them to death?"
-        // 🧠 Instances of AntFarm have a `feed` method:
+        work() {
+          // lets keep track of the number of ants working
+          let count = 0;
+          // handle where there are no ants in the array
+          if (this.ants.length === 0) {
+            return "No ants here. Did you work them to death?";
+          }
+          // loop through ants
+          for (let i = 0; i < this.ants.length; i++) {
+            // subtract 20 health from ants to simulate working
+            this.ants[i].health -= 20;
+            // for every ant still working increase count
+            count++;
+            // remove ants with no health from list
+            if (this.ants[i].health <= 0) {
+              this.ants.splice(i, 1);
+              // because the list has been modified, reduce the index count
+              i--;
+            }
+          }
+          return `${count} ants starting work!`;
+        }
+        // :brain: Instances of AntFarm have a `feed` method:
         //      * The method takes as its only argument the name of the particular ant(s) to feed
         //      * When invoked, the ant(s) by the given name obtain a health increase of 15 points
         //      * The method returns the string "Yum!" if any ants by the given name exist
         //      * The method returns the string "<ant name> not found!" if no ants by the given name exist
-        // 🌟 Example:
-        //      const farm = new AntFarm('Jess', 'Blake');
-        //      farm.ants;         // evaluates to [{name: 'Jess', health: 100}, {name: 'Blake', health: 100}]
-        //      farm.work();       // returns "2 ants starting work!"
-        //      farm.ants;         // evaluates to [{name: 'Jess', health: 80}, {name: 'Blake', health: 80}]
-        //      farm.feed('Jess'); // returns "Yum!"
-        //      farm.ants;         // evaluates to [{name: 'Jess', health: 95}, {name: 'Blake', health: 80}]
-        // 👉 HINT: when replacing a list with a modified list of the same length you can use map:
-        //      let list = ['a','b','c']
-        //      list = list.map(item => (item === "a" ? item + item : item))
-        //      console.log(list) // prints ["aa","b","c"]
-        // 👉 HINT: when replacing a list with a filtered list you can use filter:
-        //      let list = ['a','b','c']
-        //      list = list.filter(item => item === "a")
-        //      console.log(list) // prints ["a"]
-        // 👉 HINT: if you are not feeling confident with map and filter, solve the problem with for loops,
-        //      and with the piece of mind of all tests passing, refactor to use map/filter
-        constructor() {}
+        feed(name) {
+          // filter ant in list
+          let namedAnt = this.ants.filter((ant) => ant.name === name);
+          // if ant not found in array return not found
+          if (namedAnt.length === 0) {
+            return `${name} not found!`;
+          } else {
+            // loop through ants and increase health points by 15
+            this.ants.forEach((ant) => {
+              if (ant.name === name) {
+                ant.health += 15;
+              }
+            });
+            return "Yum!";
+          }
+        }
       }
 
       // 🧪 TESTS, do not make any changes below this line ===================
@@ -586,8 +645,8 @@
               console.log(`\t✅ Test ${idx + 1} ${desJSON} PASSED`);
             } else {
               console.log(`\t❌ Test ${idx + 1} ${desJSON} FAILED:
-                  Expected ${expJSON}
-                  Actual   ${actJSON}`);
+                        Expected ${expJSON}
+                        Actual   ${actJSON}`);
             }
           });
         }
